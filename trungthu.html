@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trung Thu Vui Vẻ</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      overflow: hidden;
+      background: linear-gradient(to bottom, #0a0e27 0%, #1a1a3e 50%, #2d1b4e 100%);
+      font-family: 'Arial', sans-serif;
+    }
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0; left: 0;
+    }
+    /* Mặt trăng */
+    .moon {
+      position: absolute; top: 20px; right: 20px;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle at 35% 35%, #fff9e6, #ffd700, #ffb700);
+      border-radius: 50%;
+      box-shadow: 0 0 100px rgba(255, 215, 0, 0.9),
+                  0 0 150px rgba(255, 215, 0, 0.6),
+                  inset -15px -15px 40px rgba(0, 0, 0, 0.15);
+      animation: moonGlow 3s ease-in-out infinite;
+      z-index: 10;
+    }
+    @keyframes moonGlow {
+      0%,100% { box-shadow: 0 0 100px rgba(255,215,0,0.9), 0 0 150px rgba(255,215,0,0.6); }
+      50% { box-shadow: 0 0 130px rgba(255,215,0,1), 0 0 180px rgba(255,215,0,0.8); }
+    }
+    /* Chú Cuội */
+    .chang {
+      position: absolute; bottom: 0; left: 0;
+      width: 300px; height: 400px;
+      background-image: url('https://i.postimg.cc/cHtqnC5P/Chat-GPT-Image-16-05-10-5-thg-10-2025.png');
+      background-size: contain; background-repeat: no-repeat; background-position: bottom left;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+      z-index: 5;
+    }
+    /* Chị Hằng */
+    .cuoi {
+      position: absolute; bottom: 0; right: 0;
+      width: 300px; height: 400px;
+      background-image: url('https://i.postimg.cc/k4xYxSqn/Chat-GPT-Image-15-46-11-5-thg-10-2025.png');
+      background-size: contain; background-repeat: no-repeat; background-position: bottom right;
+      animation: float 4s ease-in-out infinite 0.8s;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+      z-index: 5;
+    }
+    @keyframes float {0%,100%{transform:translateY(0)} 50%{transform:translateY(-25px)}}
+    /* Chữ chúc */
+    .wishes-container {position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:8;}
+    .wish {
+      position:absolute; top:-50px;
+      font-size:24px; font-weight:bold;
+      color:#ffd700;
+      text-shadow:0 0 10px rgba(255,215,0,0.8), 0 0 20px rgba(255,215,0,0.6);
+      white-space:nowrap;
+      animation: fall linear;
+    }
+    @keyframes fall {
+      0%{top:-50px;opacity:0;transform:translateY(0) rotate(0deg);}
+      10%{opacity:1;}
+      90%{opacity:1;}
+      100%{top:100%;opacity:0;transform:translateY(20px) rotate(10deg);}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fireworks"></canvas>
+  <div class="moon"></div>
+  <div class="chang"></div>
+  <div class="cuoi"></div>
+  <div class="wishes-container" id="wishesContainer"></div>
+
+  <script>
+    // Pháo hoa
+    const canvas=document.getElementById('fireworks');
+    const ctx=canvas.getContext('2d');
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+
+    class Particle {
+      constructor(x,y,color){this.x=x;this.y=y;this.color=color;
+        this.velocity={x:(Math.random()-0.5)*8,y:(Math.random()-0.5)*8};
+        this.alpha=1;this.decay=Math.random()*0.015+0.015;}
+      draw(){ctx.save();ctx.globalAlpha=this.alpha;ctx.fillStyle=this.color;
+        ctx.beginPath();ctx.arc(this.x,this.y,3,0,Math.PI*2);ctx.fill();ctx.restore();}
+      update(){this.velocity.y+=0.1;this.x+=this.velocity.x;this.y+=this.velocity.y;this.alpha-=this.decay;}
+    }
+
+    class Firework {
+      constructor(){this.x=Math.random()*canvas.width;this.y=canvas.height;
+        this.targetY=Math.random()*canvas.height*0.5;
+        this.color=`hsl(${Math.random()*360},100%,60%)`;
+        this.particles=[];this.exploded=false;this.velocity=-8;}
+      draw(){if(!this.exploded){ctx.fillStyle=this.color;ctx.beginPath();
+        ctx.arc(this.x,this.y,3,0,Math.PI*2);ctx.fill();}
+        this.particles.forEach(p=>p.draw());}
+      update(){if(!this.exploded){this.y+=this.velocity;if(this.y<=this.targetY)this.explode();}
+        this.particles=this.particles.filter(p=>{p.update();return p.alpha>0;});}
+      explode(){this.exploded=true;for(let i=0;i<50;i++){this.particles.push(new Particle(this.x,this.y,this.color));}}
+    }
+
+    let fireworks=[];
+    function animateFireworks(){
+      ctx.fillStyle='rgba(10,14,39,0.1)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      if(Math.random()<0.05)fireworks.push(new Firework());
+      fireworks=fireworks.filter(f=>{f.draw();f.update();return !f.exploded||f.particles.length>0;});
+      requestAnimationFrame(animateFireworks);
+    }
+    animateFireworks();
+
+    // Chữ chúc rơi
+    const wishes=["Chúc eiu Trung Thu vui vẻ","Mãi yêu eiu nhiều","Trung Thu vui vẻ nhé em, mãi rạn rỡ như ánh trăng","Chúc em luôn an yên, tươi xinh và đầy yêu thương","Tình anh dành cho em tròn đầy như trăng rằm"];
+    function createFallingWish(){
+      const wish=document.createElement('div');
+      wish.className='wish';
+      wish.textContent=wishes[Math.floor(Math.random()*wishes.length)];
+      wish.style.left=Math.random()*(window.innerWidth-300)+'px';
+      wish.style.animationDuration=(Math.random()*3+5)+'s';
+      document.getElementById('wishesContainer').appendChild(wish);
+      setTimeout(()=>wish.remove(),8000);
+    }
+    setInterval(createFallingWish,1000);
+
+    window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  </script>
+</body>
+</html>
